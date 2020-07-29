@@ -2,8 +2,8 @@
 
 namespace liboscar::routing::support {
 
-std::vector<uint32_t> Edge2CellIds::operator()(GeoPoint const & source, GeoPoint const & tgt) { 
-    if (m_last.equal(tgt)) {
+std::vector<uint32_t> Edge2CellIds::operator()(GeoPoint const & source, GeoPoint const & tgt) {
+    if (m_last.equal(tgt) && !tgt.equal(source)) {
         return (*this)(tgt, source);
     }
     if (!m_last.equal(source)) {
