@@ -10,6 +10,7 @@ class Edge2CellIds final {
 public:
     using GeoPoint = sserialize::spatial::GeoPoint;
     using TriangulationGeoHierarchyArrangement = sserialize::Static::spatial::TriangulationGeoHierarchyArrangement;
+    using Hint = TriangulationGeoHierarchyArrangement::Triangulation::FaceId;
 public:
     Edge2CellIds(liboscar::Static::OsmKeyValueObjectStore const & store) : m_tra(store.regionArrangement()) {}
     Edge2CellIds(const Edge2CellIds &) = default;
@@ -30,9 +31,15 @@ public:
         return (*this)(GeoPoint(lat_source, lon_source), GeoPoint(lat_tgt, lon_tgt));
     }
     std::vector<uint32_t> operator()(GeoPoint const & source, GeoPoint const & tgt);
+
+    inline std::vector<uint32_t> operator()(double lat_source, double lon_source, double lat_tgt, double lon_tgt, Hint & hint) {
+      return (*this)(GeoPoint(lat_source, lon_source), GeoPoint(lat_tgt, lon_tgt), hint);
+    }
+    //use hint as starting triangle for source, changes it to one triangle containing tgt
+    std::vector<uint32_t> operator()(GeoPoint const & source, GeoPoint const & tgt, Hint & hint);
 private:
     GeoPoint m_last;
-    uint32_t m_fh{0};
+    Hint m_fh{0};
     sserialize::Static::spatial::TriangulationGeoHierarchyArrangement m_tra;
 };
 
