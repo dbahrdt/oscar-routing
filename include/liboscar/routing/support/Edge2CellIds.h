@@ -12,10 +12,13 @@ public:
     using TriangulationGeoHierarchyArrangement = sserialize::Static::spatial::TriangulationGeoHierarchyArrangement;
     using Hint = TriangulationGeoHierarchyArrangement::Triangulation::FaceId;
 public:
+	Edge2CellIds() = delete;
     Edge2CellIds(liboscar::Static::OsmKeyValueObjectStore const & store) : m_tra(store.regionArrangement()) {}
     Edge2CellIds(const Edge2CellIds &) = default;
+    Edge2CellIds(Edge2CellIds &&) = default;
     ~Edge2CellIds() {}
     Edge2CellIds & operator=(Edge2CellIds const&) = default;
+    Edge2CellIds & operator=(Edge2CellIds &&) = default;
 public:
     template<typename T_OUTPUT_ITERATOR>
     void operator()(GeoPoint const & source, GeoPoint const & tgt, T_OUTPUT_ITERATOR out) {
