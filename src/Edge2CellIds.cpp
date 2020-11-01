@@ -9,20 +9,37 @@ std::vector<uint32_t> Edge2CellIds::operator()(GeoPoint const & source, GeoPoint
 		hint = m_tra.grid().faceHint(source);
 	}
 	std::vector<uint32_t> result;
-	hint = m_tra.tds().traverse(
-		source,
-		tgt,
-		[&](auto const & f){
-			auto cid = m_tra.cellIdFromFaceId(f.id());
-			if (cid != m_tra.NullCellId) {
-				result.push_back(cid);
-			}
-		},
-		hint,
-		m_tra.tds().TT_STRAIGHT
-	);
-	std::sort(result.begin(), result.end());
-	result.resize(std::distance(result.begin(), std::unique(result.begin(), result.end())));
+	auto traverse = [this, &result](GeoPoint const & source, GeoPoint const & tgt, Hint hint) -> Hint {
+		hint = m_tra.tds().traverse(
+			source,
+			tgt,
+			[&](auto const & f){
+				auto cid = m_tra.cellIdFromFaceId(f.id());
+				if (cid != m_tra.NullCellId) {
+					result.push_back(cid);
+				}
+			},
+			hint,
+			m_tra.tds().TT_STRAIGHT
+		);
+		std::sort(result.begin(), result.end());
+		result.resize(std::distance(result.begin(), std::unique(result.begin(), result.end())));
+		return hint;
+	};
+	
+	if (hint == m_tra.tds().NullFace) {//this means that source is outside of our triangulation
+		//compute it the other way round iff hint for tgt is ok
+		hint = m_tra.grid().faceHint(tgt);
+		if (hint == m_tra.tds().NullFace) { //both are outside, triangulation does not support this, though there might be cells intersecting this edge
+			return std::vector<uint32_t>();
+		}
+		//we compute the exact start triang here since we need it anyway
+		hint = m_tra.tds().locate(tgt, hint);
+		traverse(tgt, source, hint);
+	}
+	else {
+		hint = traverse(source, tgt, hint);
+	}
 	return result;
 }
 
